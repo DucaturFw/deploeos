@@ -1,11 +1,6 @@
-import axios from "axios";
-import * as binaryen from "binaryen";
 import * as Eos from "eosjs";
-import { find } from "lodash";
-
-import { eosConstants } from "../constants/constants";
-import { getFuncType } from "./common";
-import { log } from "util";
+import axios from "axios";
+import _ from "lodash";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -14,7 +9,30 @@ declare global {
   }
 }
 
-class EosClass {
+export interface IEosOptions {
+  port: number;
+  host: string;
+  blockchain: string;
+  protocol: string;
+}
+
+export const getFuncType = (func: any): any => {
+  if (func.constant && func.inputs.minItems === 0) {
+    return "view";
+  }
+
+  if (func.constant && func.inputs.minItems !== 0) {
+    return "ask";
+  }
+
+  if (!func.constant) {
+    return "write";
+  }
+
+  return null;
+};
+
+export default class EosClass {
   private network: any;
   private configEosDapp: any;
   private eos: any;
@@ -25,33 +43,27 @@ class EosClass {
   public scatter: any = window.scatter;
   public currentIdentity: any;
 
-  constructor() {
+  constructor(options: IEosOptions) {
     document.addEventListener("scatterLoaded", scatterExtension => {
       this.scatter = window.scatter;
-      window.scatter = null;
     });
+    this.scatter = window.scatter;
     this.identity = null;
     this.eos = null;
     this.currentIdentity = null;
     this.identity = null;
     this.accountName = null;
     this.network = {
-      port: eosConstants.PORT,
-      host: eosConstants.HOST,
-      blockchain: eosConstants.BLOCKCHAIN,
-      protocol: eosConstants.PROTOCOL
+      port: options.port,
+      host: options.host,
+      blockchain: options.blockchain,
+      protocol: options.protocol
     };
-    this.url =
-      eosConstants.PROTOCOL +
-      "://" +
-      eosConstants.HOST +
-      ":" +
-      eosConstants.PORT;
+    this.url = `${this.network.protocol}://${this.network.host}:${
+      this.network.port
+    }`;
 
-    this.configEosDapp = {
-      binaryen
-      // mockTransactions: () => null,
-    };
+    this.configEosDapp = {};
 
     this.sendTransaction = this.sendTransaction.bind(this);
     this.getAccountName = this.getAccountName.bind(this);
@@ -63,12 +75,15 @@ class EosClass {
   public setChainId() {
     return new Promise((resolve, reject) => {
       if (!this.configEosDapp.chainId) {
+        console.log("Begin ask chain id");
         axios
           .get(this.url + "/v1/chain/get_info")
           .then(result => {
             if (result.status === 200) {
               this.network.chainId = result.data.chain_id;
               this.configEosDapp.chainId = result.data.chain_id;
+
+              console.log("return chain id " + result.data.chain_id);
               resolve();
             }
           })
@@ -111,6 +126,32 @@ class EosClass {
     );
   }
 
+  public initiatePower = (bytes: number, cpu: number, net: number) => {
+    return this.setChainId()
+      .then(() => this.forgetIdentity())
+      .then(() => this.scatter.suggestNetwork(this.network))
+      .then(() => this.scatter.getIdentity({ accounts: [this.network] }))
+      .then(identity => {
+        return this.scatter
+          .eos(this.network, Eos, this.configEosDapp, this.network.protocol)
+          .transaction(tr => {
+            tr.buyrambytes({
+              payer: this.getAccountName(identity),
+              receiver: this.getAccountName(identity),
+              bytes: bytes
+            });
+
+            tr.delegatebw({
+              from: this.getAccountName(identity),
+              receiver: this.getAccountName(identity),
+              stake_net_quantity: `${cpu.toFixed(4)} EOS`,
+              stake_cpu_quantity: `${cpu.toFixed(4)} EOS`,
+              transfer: 0
+            });
+          });
+      });
+  };
+
   public deployContract = (bin: string, abi: any) => {
     this.scatter.requireVersion(5.0);
 
@@ -118,7 +159,10 @@ class EosClass {
       this.setChainId()
         // accept current network
         .then(() => this.forgetIdentity())
-        .then(() => this.scatter.suggestNetwork(this.network))
+        .then(() => {
+          console.log(this.network);
+          return this.scatter.suggestNetwork(this.network);
+        })
         .then(() => this.scatter.getIdentity({ accounts: [this.network] }))
         .then(identity => {
           this.currentIdentity = identity;
@@ -129,6 +173,7 @@ class EosClass {
             .eos(this.network, Eos, this.configEosDapp, this.network.protocol)
             .setcode(this.accountName, 0, 0, bin);
         })
+        .catch(e => console.log(e))
         .then(() => {
           // send smart-contract abi
           return this.scatter
@@ -274,7 +319,7 @@ class EosClass {
             .catch(error => reject(error));
           break;
         case "ask":
-          const table = find(abi.tables, { name: func.name });
+          const table = _.find(abi.tables, { name: func.name });
           const tableKey = table.key_names[0];
 
           this.readTable(address, tableKey, func, formData)
@@ -302,5 +347,3 @@ class EosClass {
     });
   }
 }
-
-export default new EosClass();
