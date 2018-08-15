@@ -1,47 +1,55 @@
 <template lang="pug">
-  section
-    h1.header Deploeos
-    el-row(:gutter='50')
-      el-col(:span='12')
-        h2 ABI File
-        el-upload.upload-demo(drag='', 
-                              action='/',
-                              :before-upload='possibleAbi'
-                              ref='upload')
-          i.el-icon-upload
-          .el-upload__text
-            em click to upload
-      el-col(:span='12')
-        h2 WASM File
-        el-upload.upload-demo(drag='', 
-                              action='/',
-                              :before-upload='possibleWasm'
-                              ref='upload')
-          i.el-icon-upload
-          .el-upload__text
-            em click to upload
+    div(:class="b()")
+      div(:class="b('upload-row')")
+        div(:class="b('uploader')")
+          h2(:class="b('title', {type:'file'})") ABI File
+          el-upload.upload-demo(drag='', 
+                                action='/',
+                                :before-upload='possibleAbi'
+                                ref='upload')
+            i.el-icon-upload
+            .el-upload__text
+              em click to upload
+        div(:class="b('uploader')")
+          h2(:class="b('title', {type:'file'})") WASM File
+          el-upload.upload-demo(drag='', 
+                                action='/',
+                                :before-upload='possibleWasm'
+                                ref='upload')
+            i.el-icon-upload
+            .el-upload__text
+              em click to upload
 
-    el-button(type="primary" @click='deploy') Deploy
-    el-button(type="primary" @click='powerUp') Power
-
-    // pre {{ eos }}
+      el-button(type="primary" @click='deploy') Deploy
+      el-button(type="primary" @click='powerUp') Power
 </template>
 
+<style lang="scss">
+.index-page {
+  &__upload-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__uploader {
+    margin: 20px;
+  }
+}
+</style>
+
+
 <script lang="ts">
-import Eos from "~/lib/eos";
+import EosClass from "~/lib/eos";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
-import { setInterval } from "timers";
 
 @Component({
-  mounted() {
-    this.findEOS();
-  }
+  name: "index-page",
 })
 export default class extends Vue {
-  @State people;
+  @State eos: EosClass;
 
-  eos: Eos | null = null;
   bin: any = null;
   abi: any = {};
 
@@ -51,51 +59,5 @@ export default class extends Vue {
       console.log(result);
     }
   }
-
-  async powerUp() {
-    console.log(await this.eos!.initiatePower(10e6, 100, 100));
-  }
-
-  async possibleWasm(f: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.bin = Buffer.from(reader.result);
-      console.log(reader.result, this.bin);
-    };
-
-    reader.readAsArrayBuffer(f);
-
-    throw new Error("do not upload hack");
-  }
-  async possibleAbi(f: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.abi = JSON.parse(reader.result);
-      console.log(reader.result, this.abi);
-    };
-
-    reader.readAsText(f);
-
-    throw new Error("do not upload hack");
-  }
-
-  findEOS() {
-    this.eos = (<any>process).client
-      ? new Eos({
-          port: 443,
-          host: "jungle.eos.smartz.io",
-          protocol: "https",
-          blockchain: "eos"
-        })
-      : null;
-    if (!this.eos) {
-      setTimeout(() => this.findEOS(), 300);
-    }
-  }
 }
 </script>
-<style>
-body {
-  font-family: "Montserrat", sans-serif;
-}
-</style>
