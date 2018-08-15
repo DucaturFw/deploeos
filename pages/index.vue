@@ -1,9 +1,10 @@
 <template lang="pug">
     div(:class="b()")
-      div(:class="b('upload-row')")
+      div(:class="b('upload-row')" v-loading="disabled")
         div(:class="b('uploader')")
           h2(:class="b('title', {type:'file'})") ABI File
           el-upload.upload-demo(drag='', 
+                                :disabled="disabled"
                                 action='/',
                                 :before-upload='possibleAbi'
                                 ref='upload')
@@ -13,6 +14,7 @@
         div(:class="b('uploader')")
           h2(:class="b('title', {type:'file'})") WASM File
           el-upload.upload-demo(drag='', 
+                                :disabled="disabled"
                                 action='/',
                                 :before-upload='possibleWasm'
                                 ref='upload')
@@ -21,7 +23,6 @@
               em click to upload
 
       el-button(type="primary" @click='deploy') Deploy
-      el-button(type="primary" @click='powerUp') Power
 </template>
 
 <style lang="scss">
@@ -43,21 +44,47 @@
 import EosClass from "~/lib/eos";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
+import { INetworkModel } from "types";
 
 @Component({
-  name: "index-page",
+  name: "index-page"
 })
 export default class extends Vue {
   @State eos: EosClass;
+  @State network: INetworkModel;
+  @State identity: string;
 
   bin: any = null;
   abi: any = {};
+
+  get disabled() {
+    return this.network === null || this.identity === null;
+  }
 
   async deploy() {
     if (this.eos) {
       const result = await this.eos.deployContract(this.bin, this.abi);
       console.log(result);
     }
+  }
+
+  async possibleWasm(f: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.bin = Buffer.from(reader.result);
+      console.log(reader.result, this.bin);
+    };
+    reader.readAsArrayBuffer(f);
+    throw new Error("do not upload hack");
+  }
+  async possibleAbi(f: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.abi = JSON.parse(reader.result);
+      console.log(reader.result, this.abi);
+    };
+    reader.readAsText(f);
+    throw new Error("do not upload hack");
   }
 }
 </script>

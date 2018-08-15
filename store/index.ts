@@ -9,7 +9,7 @@ export interface IStorageState {
   wast: Buffer;
 
   network: INetworkModel;
-  selectedIdentity: string;
+  identity: string;
 }
 
 export function state(): Nullable<IStorageState> {
@@ -18,7 +18,7 @@ export function state(): Nullable<IStorageState> {
     abi: null,
     wast: null,
     network: null,
-    selectedIdentity: null
+    identity: null
   };
 }
 
@@ -28,7 +28,7 @@ export class mutations {
   }
 
   static setIdentity(state: IStorageState, identity: string) {
-    state.selectedIdentity = identity;
+    state.identity = identity;
   }
 
   static setEos(state: IStorageState, eos: EosClass) {

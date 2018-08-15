@@ -15,7 +15,6 @@
 </template>
 
 <script lang="ts">
-
 import Eos from "~/lib/eos";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
@@ -23,6 +22,7 @@ import { setInterval } from "timers";
 
 import SelectNetwork from "~/components/SelectNetwork.vue";
 import SelectIdentity from "~/components/SelectIdentity.vue";
+import { INetworkModel } from "types";
 
 @Component({
   name: "default-layout",
@@ -32,6 +32,12 @@ import SelectIdentity from "~/components/SelectIdentity.vue";
   }
 })
 export default class extends Vue {
+  onNetworkSelect(network: INetworkModel) {
+    console.log(network);
+  }
+  onIdentitySelect(identity: any) {
+    console.log(identity);
+  }
 }
 </script>
 
