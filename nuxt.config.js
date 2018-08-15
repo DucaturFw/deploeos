@@ -23,7 +23,10 @@ module.exports = {
   env: {
     baseUrl: process.env.BASE_URL || `http://${host}:${port}`
   },
-  plugins: [{ src: "~/plugins/elements.plugin.ts" }],
+  plugins: [
+    { src: "~/plugins/elements.plugin.ts" },
+    { src: "~/plugins/bem.plugin.ts" }
+  ],
   head: {
     title: "tt1",
     meta: [
