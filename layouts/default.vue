@@ -3,12 +3,13 @@
     link(href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,800&amp;subset=cyrillic" rel="stylesheet")
     div(:class="b('header')")
       h1(:class="b('brand')") Deploeos
-      select-network(:class="b('network')" @change='onNetworkSelect')
-      select-identity(:class="b('identity')" @change='onIdentitySelect')
+      select-network(:class="b('network')")
+      select-identity(:class="b('identity')")
 
     el-menu.el-menu-demo(mode="horizontal" :router="true")
       el-menu-item(index='deploy' :route="{ path: '/' }") Deploy
       el-menu-item(index='interact' :route="{ path: '/interact' }") Interact
+      el-menu-item(index='inspect' :route="{ path: '/inspect' }") Inspect Identity
 
     div(:class="b('content')")
       nuxt
@@ -17,7 +18,7 @@
 <script lang="ts">
 import Eos from "~/lib/eos";
 import { Component, Vue } from "nuxt-property-decorator";
-import { State } from "vuex-class";
+import { State, Action } from "vuex-class";
 import { setInterval } from "timers";
 
 import SelectNetwork from "~/components/SelectNetwork.vue";
@@ -31,14 +32,7 @@ import { INetworkModel } from "types";
     SelectNetwork
   }
 })
-export default class extends Vue {
-  onNetworkSelect(network: INetworkModel) {
-    console.log(network);
-  }
-  onIdentitySelect(identity: any) {
-    console.log(identity);
-  }
-}
+export default class extends Vue {}
 </script>
 
 
