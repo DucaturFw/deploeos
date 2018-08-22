@@ -71,19 +71,17 @@ export async function chooseIdentity(state: IStorageState) {
 //   });
 // }
 
-// export function getAccountName(
-//   identity: IScatterIdentity
-// ): Name {
-//   if (
-//     identity.accounts &&
-//     Array.isArray(identity.accounts) &&
-//     identity.accounts.length > 0
-//   ) {
-//     return identity.accounts[0].name;
-//   } else {
-//     throw Error("Account not found!");
-//   }
-// }
+export function getAccountName(identity: IScatterIdentity): Name {
+  if (
+    identity.accounts &&
+    Array.isArray(identity.accounts) &&
+    identity.accounts.length > 0
+  ) {
+    return identity.accounts[0].name;
+  } else {
+    throw Error("Account not found!");
+  }
+}
 
 // export async function forgetIdentity() {
 //   const scatter = await this.getScatter();
