@@ -13,6 +13,9 @@ declare module "eosjs" {
   import * as EosEcc from "eosjs-ecc";
 
   export type Name = string;
+  export type BlockNumber = number;
+  export type DateString = string;
+  export type AssetString = string;
 
   interface EosDefault {
     (config: any): EosInstance;
@@ -25,6 +28,76 @@ declare module "eosjs" {
   interface ITableResult<T> {
     rows: T[];
     more: boolean;
+  }
+  export interface IBandwidthLimit {
+    used: number;
+    available: number;
+    max: number;
+  }
+  export interface IPermissionAuthKeys {
+    key: string;
+    weight: number;
+  }
+  export interface IPermissionAuthAccount {
+    permission: {
+      actor: Name;
+      permission: Name;
+    };
+    weight: number;
+  }
+  export interface IPermissionAuth {
+    threshold: number;
+    keys: IPermissionAuthKeys[];
+    accounts: IPermissionAuthAccount[];
+    waits: any[];
+  }
+  export interface IPermission {
+    perm_name: Name;
+    parent: Name;
+    required_auth: IPermissionAuth;
+  }
+
+  export interface IAccountResponse {
+    account_name: Name;
+    head_block_num: BlockNumber;
+    head_block_time: DateString;
+    privileged: boolean;
+    last_code_update: DateString;
+    created: DateString;
+    core_liquid_balance: AssetString;
+    ram_quota: number;
+    net_weight: number;
+    cpu_weight: number;
+    net_limit: IBandwidthLimit;
+    cpu_limit: IBandwidthLimit;
+    ram_usage: number;
+    permissions: IPermission[];
+    total_resources: {
+      owner: Name;
+      net_weight: AssetString;
+      cpu_weight: AssetString;
+      ram_bytes: number;
+    };
+    self_delegated_bandwidth: {
+      from: Name;
+      to: Name;
+      net_weight: AssetString;
+      cpu_weight: AssetString;
+    };
+    refund_request: any;
+    voter_info: {
+      owner: Name;
+      proxy: string;
+      producers: any[];
+      staked: number;
+      last_vote_weight: string;
+      proxied_vote_weight: string;
+      is_proxy: number;
+    };
+  }
+
+  export interface IAccountRequest {
+    account_name: Name;
   }
 
   export interface IInfoResponse {
@@ -121,7 +194,7 @@ declare module "eosjs" {
     setcode: EosMethod<ISetCodeRequest, any>;
 
     getBlock: EosMethod<any, any>;
-    getAccount: EosMethod<any, any>;
+    getAccount: EosMethod<IAccountRequest, IAccountResponse>;
     getCode: EosMethod<any, any>;
     getTableRows<T>(config: ITableRequest): Promise<ITableResult<T>>;
     abiJsonToBin: EosMethod<any, any>;
