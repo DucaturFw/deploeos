@@ -1,4 +1,5 @@
-import { IStorageState } from "~/types";
+import * as Eos from "eosjs";
+import { IStorageState, INetworkModel } from "~/types";
 
 export type Scatter = any;
 
@@ -10,7 +11,10 @@ declare global {
 export type IEosHelperContext = any;
 export type IScatterIdentity = any;
 export type Name = string;
-
+export interface IEosOutput {
+  log: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+}
 export async function getScatter(): Promise<Scatter> {
   if (window.scatter) {
     return window.scatter;
@@ -30,6 +34,29 @@ export async function getScatter(): Promise<Scatter> {
     }
 
     loop(true);
+  });
+}
+
+export async function getEos(network: INetworkModel, output?: IEosOutput) {
+  const scatter = await getScatter();
+  const eosOptions = {
+    expireInSeconds: 60
+  };
+  if (output) {
+    eosOptions["logger"] = output;
+  }
+  const eos = scatter.eos(network, Eos, eosOptions);
+  return { eos: eos as Eos.EosInstance };
+}
+
+export async function getAbi(
+  account: Name,
+  network: INetworkModel,
+  output?: IEosOutput
+) {
+  const { eos } = await getEos(network, output);
+  return eos.getAbi({
+    account_name: account
   });
 }
 
