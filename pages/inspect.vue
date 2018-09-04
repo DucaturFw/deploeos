@@ -1,9 +1,8 @@
 <template lang="pug">
     div(:class="b()" v-loading='!eos')
-      div 
-      //- el-form(:model='contract' label-width="120px")
-      //-   el-form-item(label='Contract account')
-      //-     el-input(v-model='contract.account')
+      el-form(:model='contract' label-width="120px")
+        el-form-item(label='Contract account')
+          el-input(v-model='contract.account')
 </template>
 
 <style lang="scss">
@@ -17,6 +16,8 @@ import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
 import Eos, { EosInstance } from "eosjs";
 import { getAccountName } from "~/lib/eos-helper";
+import { setTimeout } from "timers";
+import AsyncComputed from "~/plugins/async-computed.plugin";
 
 @Component({
   name: "inspect-page",
@@ -32,6 +33,14 @@ export default class extends Vue {
   @State chainId;
 
   _account: any = null;
+
+  @AsyncComputed({
+    default: "wait please"
+  })
+  async accountName() {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return "hello";
+  }
 
   get account(): any {
     if (this._account) {

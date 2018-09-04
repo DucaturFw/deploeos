@@ -38,6 +38,7 @@ export class actions {
       "setNetworkEndpoint",
       `${network.protocol}://${network.host}:${network.port}`
     );
+    commit("setIdentity", null);
   }
   static async setIdentity({ commit }, identity: IScatterIdentity) {
     commit("setIdentity", identity);

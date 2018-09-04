@@ -8,6 +8,33 @@ export interface IStorageState {
   identity: IScatterIdentity;
 }
 
+export interface IAbiStructField {
+  name: string;
+  type: string;
+}
+export interface IAbiStruct {
+  name: string;
+  base: string;
+  fields: IAbiStructField[];
+}
+
+export interface IAbiAction {
+  name: string;
+  type: string;
+  ricardian_contract: string;
+}
+
+export interface IAbiResponse {
+  version: string; //"eosio::abi/1.0",
+  types: any[];
+  structs: IAbiStruct[];
+  actions: IAbiAction[];
+  tables: any[];
+  ricardian_clauses: any[];
+  error_messages: any[];
+  abi_extensions: any[];
+}
+
 export interface INetworkModel {
   id: string;
   name: string;
