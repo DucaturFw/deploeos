@@ -196,6 +196,7 @@ declare module "eosjs" {
     getBlock: EosMethod<any, any>;
     getAccount: EosMethod<IAccountRequest, IAccountResponse>;
     getCode: EosMethod<any, any>;
+    getAbi: EosMethod<any, any>;
     getTableRows<T>(config: ITableRequest): Promise<ITableResult<T>>;
     abiJsonToBin: EosMethod<any, any>;
     abiBinToJson: EosMethod<any, any>;
