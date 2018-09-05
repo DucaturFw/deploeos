@@ -37,7 +37,10 @@ export async function getScatter(): Promise<Scatter> {
   });
 }
 
-export async function getEos(network: INetworkModel, output?: IEosOutput) {
+export async function getEos(
+  network: INetworkModel,
+  output?: IEosOutput
+): Promise<{ eos: EosInstance }> {
   const scatter = await getScatter();
   const eosOptions = {
     expireInSeconds: 60
@@ -110,6 +113,25 @@ export function getAccountName(identity: IScatterIdentity): Name {
   }
 }
 
+export async function sendTransaction(
+  address: Name,
+  action: string,
+  formData: any,
+  identity: IScatterIdentity,
+  network: INetworkModel
+) {
+  let accountName = getAccountName(identity);
+  let { eos } = await getEos(network);
+  const result = await (<any>eos).transaction(address, contract => {
+    contract[action](formData, { authorization: accountName });
+  });
+
+  return {
+    result,
+    formData,
+    action
+  };
+}
 // export async function forgetIdentity() {
 //   const scatter = await this.getScatter();
 //   return scatter.forgetIdentity();
