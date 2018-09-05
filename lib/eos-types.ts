@@ -27,37 +27,11 @@ export type TypeDef =
   | { [field: string]: TypeDef }
   | [(string | { [field: string]: TypeDef })];
 
-// export function expand(
-//   name: string,
-//   type: string,
-//   customs?: {
-//     [key: string]: TypeDef;
-//   }
-// ): TypeScalar[] {
-//   return [
-//     {
-//       name,
-//       type
-//     }
-//   ];
-//   // if (typeEditors[type]) {
-//   //   return [typeEditors[type]];
-//   // } else if (chainTypes[type]) {
-//   //   return expand(chainTypes[type], customs);
-//   // } else if (customs[type]) {
-//   //   return Object.keys(customs[type].fields)
-//   //     .map(f => expand(customs[type].fields[f], customs))
-//   //     .reduce((acc, val) => acc.concat(val), []);
-//   // } else {
-//   //   throw new Error("unknown type: " + type);
-//   // }
-// }
-
 function wrap(a: any, w: boolean): any {
   return w ? [a] : a;
 }
 
-export function lookUpBase(type: string): any {
+export function lookUpBase(type: string, customs?: any): any {
   const array = isArray(type);
   if (array) {
     type = type.substr(0, type.length - 2);
@@ -68,32 +42,40 @@ export function lookUpBase(type: string): any {
   if (isBase(type)) {
     r = type;
   } else if (isChainType(type)) {
-    const chain = chainTypes[type];
-
-    if (typeof chain === "string") {
-      r = lookUpBase(chain);
-    } else if (chain.base && chain.base.length) {
-      console.log(chain.base, lookUpBase(chain.base));
-      r = Object.assign(
-        lookUpBase(chain.base),
-        toDictionary(
-          Object.keys(chain.fields),
-          k => k,
-          k => lookUpBase(chain.fields[k])
-        )
-      );
-    } else {
-      r = toDictionary(
-        Object.keys(chain.fields),
-        k => k,
-        k => lookUpBase(chain.fields[k])
-      );
-    }
+    r = lookUpTypeCollection(chainTypes, type, customs);
+  } else if (customs && customs[type]) {
+    r = lookUpTypeCollection(customs, type, customs);
   } else {
     r = `unknown_${type}`;
   }
 
   return wrap(r, array);
+}
+
+function lookUpTypeCollection(
+  collection: any,
+  type: string,
+  customs?: any
+): any {
+  const chain = collection[type];
+  if (typeof chain === "string") {
+    return lookUpBase(chain, customs);
+  } else if (chain.base && chain.base.length) {
+    return Object.assign(
+      lookUpBase(chain.base, customs),
+      toDictionary(
+        Object.keys(chain.fields),
+        k => k,
+        k => lookUpBase(chain.fields[k], customs)
+      )
+    );
+  } else {
+    return toDictionary(
+      Object.keys(chain.fields),
+      k => k,
+      k => lookUpBase(chain.fields[k], customs)
+    );
+  }
 }
 
 export function isArray(type: string): boolean {
