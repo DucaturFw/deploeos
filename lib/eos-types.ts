@@ -1,42 +1,107 @@
-export const typeEditors = {
-  uint64: "el-input",
-  fixed_bytes20: "el-input",
-  fixed_bytes32: "el-input",
-  fixed_bytes64: "el-input",
-  fixed_bytes65: "el-input",
-  fixed_bytes33: "el-input",
-  fixed_string16: "el-input",
-  string: "el-input",
-  name: "el-input",
-  int64: "el-input",
-  time: "el-input",
-  uint32: "el-input",
-  timestamp: "el-input",
-  uint16: "el-input",
-  checksum_type: "el-input",
-  bytes: "el-input",
-  varuint32: "el-input",
-  uint8: "el-input"
+import _ from "lodash/fp";
+import { toDictionary } from "../utils";
+
+export const baseTypes = {
+  uint64: true,
+  fixed_bytes20: true,
+  fixed_bytes32: true,
+  fixed_bytes64: true,
+  fixed_bytes65: true,
+  fixed_bytes33: true,
+  fixed_string16: true,
+  string: true,
+  name: true,
+  int64: true,
+  time: true,
+  uint32: true,
+  timestamp: true,
+  uint16: true,
+  checksum_type: true,
+  bytes: true,
+  varuint32: true,
+  uint8: true
 };
 
-export function expand(
-  type: string,
-  customs: {
-    [key: string]: {
-      base?: string;
-      fields: {
-        [name: string]: string;
-      };
-    };
+export type TypeDef =
+  | string
+  | { [field: string]: TypeDef }
+  | [(string | { [field: string]: TypeDef })];
+
+// export function expand(
+//   name: string,
+//   type: string,
+//   customs?: {
+//     [key: string]: TypeDef;
+//   }
+// ): TypeScalar[] {
+//   return [
+//     {
+//       name,
+//       type
+//     }
+//   ];
+//   // if (typeEditors[type]) {
+//   //   return [typeEditors[type]];
+//   // } else if (chainTypes[type]) {
+//   //   return expand(chainTypes[type], customs);
+//   // } else if (customs[type]) {
+//   //   return Object.keys(customs[type].fields)
+//   //     .map(f => expand(customs[type].fields[f], customs))
+//   //     .reduce((acc, val) => acc.concat(val), []);
+//   // } else {
+//   //   throw new Error("unknown type: " + type);
+//   // }
+// }
+
+function wrap(a: any, w: boolean): any {
+  return w ? [a] : a;
+}
+
+export function lookUpBase(type: string): any {
+  const array = isArray(type);
+  if (array) {
+    type = type.substr(0, type.length - 2);
   }
-): { name: string; type: string } {
-  if (!isChainType(type) && typeof customs[type] === "undefined") {
-    throw new Error("unknown type");
+
+  let r;
+
+  if (isBase(type)) {
+    r = type;
+  } else if (isChainType(type)) {
+    const chain = chainTypes[type];
+
+    if (typeof chain === "string") {
+      r = lookUpBase(chain);
+    } else if (chain.base && chain.base.length) {
+      console.log(chain.base, lookUpBase(chain.base));
+      r = Object.assign(
+        lookUpBase(chain.base),
+        toDictionary(
+          Object.keys(chain.fields),
+          k => k,
+          k => lookUpBase(chain.fields[k])
+        )
+      );
+    } else {
+      r = toDictionary(
+        Object.keys(chain.fields),
+        k => k,
+        k => lookUpBase(chain.fields[k])
+      );
+    }
+  } else {
+    r = `unknown_${type}`;
   }
+
+  return wrap(r, array);
+}
+
+export function isArray(type: string): boolean {
+  return type.endsWith("[]");
 }
 
 export function isBase(type: string): boolean {
-  return typeof typeEditors[type] !== "undefined";
+  return typeof baseTypes[type] !== "undefined";
 }
 
 export function isChainType(type: string): boolean {
