@@ -4,7 +4,7 @@ import * as eosTypes from "./eos-types";
 describe("Eos Types converter", function() {
   describe("Predefined types", function() {
     it("base type", function() {
-      Object.keys(eosTypes.baseTypes).forEach(type =>
+      Object.keys(eosTypes.knownTypes).forEach(type =>
         expect(eosTypes.isBase(type)).toBeTrue()
       );
     });

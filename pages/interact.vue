@@ -1,26 +1,18 @@
 <template lang="pug">
     div(:class="b()")
       div(v-if="ready")
-        pre(v-if="!error") 
-          ul
-            li(v-for="action in actions") 
-              h3 {{ action.name }}
-              p(v-if="action.ricardian_contract") {{ action.ricardian_contract }}
-              el-form(:model='interact.actions[action.name]' label-width="240px")
-                el-editor-wrapper(:name="action.name" :type="action.type" :customs="customTypes")
-                //- div(v-for="(type, name) in customTypes[action.type].fields")
-                //-   el-form-item(v-for="editor in typeToComponent(type)" :label='name')
-                //-     component(:is="editor")
-                //-   //- el-input(v-model='contract.account')
-              //- div() {{ name }}: {{ type }}
-          //- ul
-          //-   li(v-for="struct in structs")
-          //-     h3 {{struct.name}}
-          //-     div(v-for="field in struct.fields" style="margin-bottom: 20px") 
-          //-       div {{field.name}}
-          //-       div {{field.type}}
-                component(v-for="editor in typeToComponent(field.type)" :is="editor")
-        el-alert(v-else :title="abi.message" type="error")
+        el-card(v-if="!error" v-for="action in actions" shadow="never" style="margin: 15px 0") 
+          div(slot="header")
+            h3 {{ action.name }}
+          el-row(:gutter="20")
+            el-col(:span="16")
+              el-editor-wrapper(:name="action.name" :type="expand(action.type, customTypes)" @input='data => $set(interact.actions, action.name, data)')
+            el-col(:span="8")
+              pre {{ interact.actions[action.name] }}
+        el-alert(v-else :title="abi && abi.message" type="error")
+      el-card(v-else shadow="never")
+          div(slot="header")
+            h3 Loading ABI
 </template>
 
 <style lang="scss">
@@ -35,6 +27,7 @@ import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
 import Async from "~/plugins/async-computed.plugin";
 import EditorWrapper from "~/components/editors/EditorWrapper.vue";
+import { toDictionary } from "~/utils";
 import { getAbi, getEos, getScatter, getAccountName } from "~/lib/eos-helper";
 import {
   INetworkModel,
@@ -44,6 +37,7 @@ import {
   IAbiStruct,
   IAbiAction
 } from "~/types";
+import { isChainType, lookUpBase } from "~/lib/eos-types";
 
 @Component({
   name: "interact-page",
@@ -60,17 +54,24 @@ export default class extends Vue {
   };
 
   @Async(async function() {
+    let abi: { abi: IAbiResponse };
     try {
-      const { eos } = await getEos(this.network);
-      return await eos.getAbi({
-        account_name: getAccountName(this.identity)
-      });
+      abi = await getAbi(getAccountName(this.identity), this.network);
     } catch (e) {
+      console.log(e);
       return {
         status: 500,
         message: e.message
       };
     }
+
+    this.interact.actions = toDictionary(
+      abi.abi.actions,
+      a => a.name,
+      _ => ({})
+    );
+
+    return abi;
   })
   abi: { abi?: IAbiResponse; status: number; text: string } | null = null;
 
@@ -88,25 +89,25 @@ export default class extends Vue {
 
   get customTypes() {
     if (this.structs) {
-      const reduce = <T, V>(
-        arr: T[],
-        key: (obj: T) => string,
-        val: (obj: T) => V
-      ) =>
-        arr.reduce((acc, cur) => ((acc[key(cur)] = val(cur)), acc), {} as {
-          [key: string]: V;
-        });
-
-      return reduce(
+      return toDictionary(
         this.structs,
         x => x.name,
         x =>
           Object.assign({}, x, {
-            fields: reduce(x.fields, f => f.name, f => f.type)
+            fields: toDictionary(x.fields, f => f.name, f => f.type)
           })
       );
     }
     return {};
+  }
+
+  expand(type: string, customs: any): any {
+    try {
+      return lookUpBase(type, customs);
+    } catch (e) {
+      console.error("editor err", e);
+      return "error_type_" + type;
+    }
   }
 
   get error() {

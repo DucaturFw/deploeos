@@ -1,25 +1,133 @@
 import _ from "lodash/fp";
 import { toDictionary } from "../utils";
 
-export const baseTypes = {
-  uint64: true,
-  fixed_bytes20: true,
-  fixed_bytes32: true,
-  fixed_bytes64: true,
-  fixed_bytes65: true,
-  fixed_bytes33: true,
-  fixed_string16: true,
-  string: true,
-  name: true,
-  int64: true,
-  time: true,
-  uint32: true,
-  timestamp: true,
-  uint16: true,
-  checksum_type: true,
-  bytes: true,
-  varuint32: true,
-  uint8: true
+export const knownTypes = {
+  uint64: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_bytes20: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_bytes32: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_bytes64: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_bytes65: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_bytes33: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  fixed_string16: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  string: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  name: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  int64: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  time: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  uint32: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  timestamp: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  uint16: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  checksum_type: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  bytes: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  varuint32: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  },
+  uint8: {
+    component: "el-input",
+    config: {},
+    validation: async (value: any, type?: string, name?: string) => true,
+    normalize: async (value: any, type?: string, name?: string) => value,
+    default: (type?: string, name?: string) => ""
+  }
 };
 
 export type TypeDef =
@@ -83,7 +191,7 @@ export function isArray(type: string): boolean {
 }
 
 export function isBase(type: string): boolean {
-  return typeof baseTypes[type] !== "undefined";
+  return typeof knownTypes[type] !== "undefined";
 }
 
 export function isChainType(type: string): boolean {

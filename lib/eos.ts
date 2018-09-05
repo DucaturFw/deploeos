@@ -319,7 +319,7 @@ export default class EosClass {
             .catch(error => reject(error));
           break;
         case "ask":
-          const table = _.find(abi.tables, { name: func.name });
+          const table = <any>_.find(abi.tables, { name: func.name });
           const tableKey = table.key_names[0];
 
           this.readTable(address, tableKey, func, formData)

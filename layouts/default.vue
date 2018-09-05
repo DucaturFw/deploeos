@@ -15,7 +15,6 @@
 </template>
 
 <script lang="ts">
-import Eos from "~/lib/eos";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State, Action } from "vuex-class";
 import { setInterval } from "timers";

@@ -1,5 +1,5 @@
-import * as Eos from "eosjs";
-import { IStorageState, INetworkModel } from "~/types";
+import Eos, { EosInstance } from "eosjs";
+import { IStorageState, INetworkModel, IAbiResponse } from "~/types";
 
 export type Scatter = any;
 
@@ -46,18 +46,18 @@ export async function getEos(network: INetworkModel, output?: IEosOutput) {
     eosOptions["logger"] = output;
   }
   const eos = scatter.eos(network, Eos, eosOptions);
-  return { eos: eos as Eos.EosInstance };
+  return { eos: eos as EosInstance };
 }
 
 export async function getAbi(
   account: Name,
   network: INetworkModel,
   output?: IEosOutput
-) {
+): Promise<{ abi: IAbiResponse }> {
   const { eos } = await getEos(network, output);
   return eos.getAbi({
     account_name: account
-  });
+  }) as Promise<{ abi: IAbiResponse }>;
 }
 
 export async function forgetIdentity() {
