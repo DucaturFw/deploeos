@@ -1,132 +1,155 @@
 import _ from "lodash/fp";
 import { toDictionary } from "../utils";
+import BN from "bn.js";
 
-export const knownTypes = {
+const normalizers = {
+  nothing: async (value: any, type?: string, name?: string) => value,
+  toNumber: async (value: any, type?: string, name?: string) =>
+    new BN(value, 10).toNumber()
+};
+
+const validators = {
+  nothing: async (value: any, type?: string, name?: string) => true
+};
+
+const defaults = {
+  string: async (type?: string, name?: string) => ""
+};
+
+export interface KnownType {
+  component: string;
+  config: any;
+  validation(value: any, type?: string, name?: string): Promise<boolean>;
+  normalize(value: any, type?: string, name?: string): Promise<any>;
+  default(type?: string, name?: string): Promise<any>;
+}
+
+export const knownTypes: { [type: string]: KnownType } = {
   uint64: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   },
   fixed_bytes20: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   fixed_bytes32: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   fixed_bytes64: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   fixed_bytes65: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   fixed_bytes33: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   fixed_string16: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   string: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   name: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   int64: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   },
   time: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   uint32: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   },
   timestamp: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   uint16: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   },
   checksum_type: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   bytes: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.nothing,
+    default: defaults.string
   },
   varuint32: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   },
   uint8: {
     component: "el-input",
     config: {},
-    validation: async (value: any, type?: string, name?: string) => true,
-    normalize: async (value: any, type?: string, name?: string) => value,
-    default: (type?: string, name?: string) => ""
+    validation: validators.nothing,
+    normalize: normalizers.toNumber,
+    default: defaults.string
   }
 };
 
