@@ -4,11 +4,13 @@
         el-card(v-if="!error" v-for="action in actions" shadow="never" style="margin: 15px 0") 
           div(slot="header")
             h3 {{ action.name }}
-          el-row(:gutter="20")
+          el-row(:gutter="20" type="flex")
             el-col(:span="16")
               el-editor-wrapper(:name="action.name" :type="expand(action.type, customTypes)" @input='data => $set(interact.actions, action.name, data)')
-            el-col(:span="8")
-              pre {{ interact.actions[action.name] }}
+            el-col(:span="8" :class="b('result')")
+              pre(:class="b('result-json')") {{ interact.actions[action.name] }}
+              div(:class="b('result-apply')")
+                el-button(type="primary" @click="sendAction(action.name)") Send action
         el-alert(v-else :title="abi && abi.message" type="error")
       el-card(v-else shadow="never")
           div(slot="header")
@@ -28,7 +30,13 @@ import { State } from "vuex-class";
 import Async from "~/plugins/async-computed.plugin";
 import EditorWrapper from "~/components/editors/EditorWrapper.vue";
 import { toDictionary } from "~/utils";
-import { getAbi, getEos, getScatter, getAccountName } from "~/lib/eos-helper";
+import {
+  getAbi,
+  getEos,
+  getScatter,
+  getAccountName,
+  sendTransaction
+} from "~/lib/eos-helper";
 import {
   INetworkModel,
   IScatterIdentity,
@@ -118,36 +126,36 @@ export default class extends Vue {
     return this.abi != null;
   }
 
-  // typeToComponent(type: TypeDef): string[] {
-  //   if (typeof type === "string") {
-  //     if (typeEditors[type]) {
-  //       return [typeEditors[type]];
-  //     } else if (chainTypes[type]) {
-  //       return this.typeToComponent(chainTypes[type]);
-  //     } else if (this.customTypes[type]) {
-  //       return this.typeToComponent(this.customTypes[type]);
-  //     }
-  //     console.log(this.customTypes);
+  async sendAction(action: string) {
+    const data = this.interact.actions[action];
 
-  //     return ["unknown"];
-  //   } else {
-  //     const base = type.base ? this.typeToComponent(type.base) : [];
-  //     const fields = Object.keys(type.fields)
-  //       .map(k => type.fields[k])
-  //       .map(t => this.typeToComponent(t))
-  //       .reduce((acc, val) => acc.concat(val), []);
+    const { result } = await sendTransaction(
+      getAccountName(this.identity),
+      action,
+      data,
+      this.identity,
+      this.network
+    );
 
-  //     return [...base, ...fields];
-  //   }
-  // }
-
-  // actionToEditor(action: IAbiAction): any {
-  //   console.log(this.customTypes[action.type]);
-  //   // return _.zipObject(['component', 'label'])(this.typeToComponent(action.type), this.customTypes[action.type])
-  // }
+    console.log(result);
+  }
 }
 
 interface IEditorConfiguration {
   component: string;
 }
 </script>
+
+<style lang="scss">
+.interact-page {
+  &__result {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    &-apply {
+      margin-top: auto;
+    }
+  }
+}
+</style>
