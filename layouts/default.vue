@@ -54,10 +54,10 @@ body {
   padding: 0 40px;
   min-height: 100vh;
 
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
+  // display: flex;
+  // align-items: center;
+  // flex-direction: column;
+  // justify-content: center;
 
   &__brand {
     text-transform: uppercase;
