@@ -4,7 +4,9 @@
   "private": true,
   "dependencies": {
     "@nuxtjs/axios": "^5.0.0",
+    "@types/deep-equal": "^1.0.1",
     "@types/lodash": "^4.14.116",
+    "deep-equal": "^1.0.1",
     "element-ui": "^2.4.5",
     "eosjs": "16.0.6",
     "lodash": "^4.17.10",

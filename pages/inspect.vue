@@ -74,22 +74,25 @@
         div(slot="header")
           h3(style="margin: 0")  Permissions
 
-        el-card(:class="b('permission')" v-for="permission in account.permissions" shadow="never")
+        el-card(:class="b('permission')" v-for="permission in permissions" shadow="never")
           el-row(:class="b('row', { type: 'created' })" :gutter="30")
             el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
               span(:class="b('permission-name')") {{ permission.perm_name }} 
               span(:class="b('permission-threshold')") {{ permission.required_auth.threshold }} 
             el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-              div(:class="b('permission-list', {type: 'keys'})" v-for="key in permission.required_auth.keys")
-                span(:class="b('permission-data')") {{ key.key }}
-                span(:class="b('permission-weight')") {{ key.weight }} 
-              div(:class="b('permission-list', {type: 'accounts'})" v-for="account in permission.required_auth.accounts") 
-                span(:class="b('permission-data')") {{ account.permission.actor }}@{{ account.permission.permission }}
-                span(:class="b('permission-weight')") {{ account.weight }} 
+              div(:class="b('permission-list', {type: 'keys'})" v-for="(key, index) in permission.required_auth.keys")
+                el-input(:class="b('permission-data')" :value="key.key")
+                el-input(:class="b('permission-weight')" :value="key.weight")
+                el-button(:circle="true" size="mini" type="danger" :plain="true" style="margin-left: 10px" icon="el-icon-close" @click="removeKey(permission.perm_name, index)")
+              div(:class="b('permission-list', {type: 'accounts'})" v-for="(account, index) in permission.required_auth.accounts") 
+                el-input(:class="b('permission-data')" :value="`${account.permission.actor}@${account.permission.permission}`")
+                el-input(:class="b('permission-weight')" :value="account.weight")
+                el-button(:circle="true" size="mini" type="danger" :plain="true" style="margin-left: 10px" icon="el-icon-close" @click="removeAccount(permission.perm_name, index)")
               el-button-group(:class="b('permission-manage')")
-                el-button(type="default" icon="el-icon-plus") Add key
-                el-button(type="default" icon="el-icon-plus") Add account
-      pre {{ account }}
+                el-button(type="default" icon="el-icon-plus" @click="addKey(permission.perm_name)") Add key
+                el-button(type="default" icon="el-icon-plus" @click="addAccount(permission.perm_name)") Add account
+                el-button(type="danger" v-if="!same[permission.perm_name]" @click="resetPermission(permission.perm_name)") Reset
+                el-button(type="primary" v-if="!same[permission.perm_name]" @click="updatePermission(permission.perm_name)") Update
     div(v-loading="true" v-else)
       h3(style="margin: 0")  Loading
 </template>
@@ -126,11 +129,14 @@
 
 
 <script lang="ts">
-import { IAccountResponse } from "eosjs";
+import { IAccountResponse, IPermission } from "eosjs";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
 import { getAccountName, getEos } from "~/lib/eos-helper";
 import Async from "~/plugins/async-computed.plugin";
+import { toDictionary, clone } from "~/utils";
+
+import equal from "deep-equal";
 
 @Component({
   name: "inspect-page",
@@ -150,6 +156,9 @@ export default class extends Vue {
     ram: 0
   };
 
+  permissions: { [key: string]: IPermission } = {};
+  same: { [key: string]: boolean } = {};
+
   buyResource(resource: "cpu" | "net" | "ram") {
     console.log("buy", resource, this.buy[resource]);
   }
@@ -157,9 +166,18 @@ export default class extends Vue {
     if (this.accountName) {
       try {
         const { eos } = await getEos(this.network);
-        return await eos.getAccount({
+        const acc = (await eos.getAccount({
           account_name: this.accountName
-        });
+        })) as IAccountResponse;
+
+        this.permissions = toDictionary(
+          acc.permissions,
+          p => p.perm_name,
+          p => clone(p)
+        );
+        this.same = toDictionary(acc.permissions, p => p.perm_name, p => true);
+
+        return acc;
       } catch (e) {
         this.$message({
           message: "Couldn't load account with name: " + this.accountName,
@@ -171,43 +189,59 @@ export default class extends Vue {
     }
   })
   account: IAccountResponse | null = null;
-  // export interface IAccountResponse {
-  //   account_name: Name;
-  //   head_block_num: BlockNumber;
-  //   head_block_time: DateString;
-  //   privileged: boolean;
-  //   last_code_update: DateString;
-  //   created: DateString;
-  //   core_liquid_balance: AssetString;
-  //   ram_quota: number;
-  //   net_weight: number;
-  //   cpu_weight: number;
-  //   net_limit: IBandwidthLimit;
-  //   cpu_limit: IBandwidthLimit;
-  //   ram_usage: number;
-  //   permissions: IPermission[];
-  //   total_resources: {
-  //     owner: Name;
-  //     net_weight: AssetString;
-  //     cpu_weight: AssetString;
-  //     ram_bytes: number;
-  //   };
-  //   self_delegated_bandwidth: {
-  //     from: Name;
-  //     to: Name;
-  //     net_weight: AssetString;
-  //     cpu_weight: AssetString;
-  //   };
-  //   refund_request: any;
-  //   voter_info: {
-  //     owner: Name;
-  //     proxy: string;
-  //     producers: any[];
-  //     staked: number;
-  //     last_vote_weight: string;
-  //     proxied_vote_weight: string;
-  //     is_proxy: number;
-  //   };
-  // }
+
+  samePermission(key: string) {
+    if (this.account && this.permissions) {
+      this.same[key] = equal(
+        this.permissions[key],
+        this.account.permissions.find(p => p.perm_name === key)
+      );
+      console.log("compare", key, this.same[key]);
+    } else {
+      this.same[key] = false;
+    }
+  }
+
+  resetPermission(key: string) {
+    this.$set(this.permissions, key, {
+      ...this.account!.permissions.find(p => p.perm_name === key)!
+    });
+
+    this.samePermission(key);
+  }
+
+  async updatePermission(key: string) {
+    console.log(this.permissions[key]);
+  }
+
+  addKey(key: string) {
+    this.permissions[key].required_auth.keys.push({
+      key: "...",
+      weight: 1
+    });
+    this.samePermission(key);
+  }
+
+  addAccount(key: string) {
+    this.permissions[key].required_auth.accounts.push({
+      permission: {
+        actor: "...",
+        permission: "active"
+      },
+      weight: 1
+    });
+
+    this.samePermission(key);
+  }
+
+  removeKey(key: string, index: number) {
+    this.permissions[key].required_auth.keys.splice(index);
+    this.samePermission(key);
+  }
+
+  removeAccount(key: string, index: number) {
+    this.permissions[key].required_auth.accounts.splice(index);
+    this.samePermission(key);
+  }
 }
 </script>
