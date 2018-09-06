@@ -28,9 +28,9 @@ const routerBase =
       }
     : {};
 module.exports = {
-  env: {
-    baseUrl: process.env.BASE_URL || `http://${host}:${port}`
-  },
+  // env: {
+  //   baseUrl: process.env.BASE_URL || `http://${host}:${port}`
+  // },
   plugins: [
     { src: "~/plugins/elements.plugin.ts" },
     { src: "~/plugins/bem.plugin.ts" },
