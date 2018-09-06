@@ -33,7 +33,9 @@
             el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
               div(:class="b('spacer')")
                 div(:class="b('spacer-inside', { type: 'grow' })")
-                  span {{ account.ram_usage }} of {{ account.ram_quota }}
+                  span(:class="b('resource-used')") {{ account.ram_usage }} 
+                  span(:class="b('resource-divider')") of  
+                  span(:class="b('resource-max')") {{ account.ram_quota }} 
                 div(:class="b('spacer-inside', { type: 'shrink' })")
                   el-input-number(v-model.number="buy.ram" controls-position="right" :min="1")
                   el-button(type="default" @click='buyResource("ram")') Buy More
@@ -45,7 +47,10 @@
             el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
               div(:class="b('spacer')")
                 div(:class="b('spacer-inside', { type: 'grow' })")
-                  span {{ account.cpu_limit.used }} of {{ account.cpu_limit.max }}
+                  span(:class="b('resource-used')") {{ account.cpu_limit.used }} 
+                  span(:class="b('resource-divider')") of  
+                  span(:class="b('resource-max')") {{ account.cpu_limit.max }} 
+                  span(:class="b('resource-cost')") {{account.total_resources.cpu_weight}}
                 div(:class="b('spacer-inside', { type: 'shrink' })")
                   el-input-number(v-model.number="buy.cpu" controls-position="right" :min="1")
                   el-button(type="default" @click='buyResource("cpu")') Buy More
@@ -57,7 +62,10 @@
             el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
               div(:class="b('spacer')")
                 div(:class="b('spacer-inside', { type: 'grow' })")
-                  span {{ account.net_limit.used }} of {{ account.net_limit.max }}
+                  span(:class="b('resource-used')") {{ account.net_limit.used }} 
+                  span(:class="b('resource-divider')") of  
+                  span(:class="b('resource-max')") {{ account.net_limit.max }} 
+                  span(:class="b('resource-cost')") {{account.total_resources.net_weight}}
                 div(:class="b('spacer-inside', { type: 'shrink' })")
                   el-input-number(v-model.number="buy.net" controls-position="right" :min="1")
                   el-button(type="default" @click='buyResource("net")') Buy More
@@ -83,6 +91,16 @@
 
 <style lang="scss">
 .inspect-page {
+  &__spacer {
+    display: flex;
+    align-items: center;
+
+    &-inside {
+      &--type-grow {
+        flex-grow: 1;
+      }
+    }
+  }
 }
 </style>
 
