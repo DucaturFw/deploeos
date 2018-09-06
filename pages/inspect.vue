@@ -74,14 +74,19 @@
         div(slot="header")
           h3(style="margin: 0")  Permissions
 
-        el-card( v-for="permission in account.permissions" shadow="never")
+        el-card(:class="b('permission')" v-for="permission in account.permissions" shadow="never")
           el-row(:class="b('row', { type: 'created' })" :gutter="30")
             el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-              span {{ permission.perm_name }}
+              span(:class="b('permission-name')") {{ permission.perm_name }} 
+              span(:class="b('permission-threshold')") {{ permission.required_auth.threshold }} 
             el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-              div(v-for="key in permission.required_auth.keys") {{ key.weight }} - {{ key.key }}
-              div(v-for="account in permission.required_auth.accounts") {{ account.weight }} - {{ account.permission.actor }}@{{ account.permission.permission }}
-              el-button-group
+              div(:class="b('permission-list', {type: 'keys'})" v-for="key in permission.required_auth.keys")
+                span(:class="b('permission-data')") {{ key.key }}
+                span(:class="b('permission-weight')") {{ key.weight }} 
+              div(:class="b('permission-list', {type: 'accounts'})" v-for="account in permission.required_auth.accounts") 
+                span(:class="b('permission-data')") {{ account.permission.actor }}@{{ account.permission.permission }}
+                span(:class="b('permission-weight')") {{ account.weight }} 
+              el-button-group(:class="b('permission-manage')")
                 el-button(type="default" icon="el-icon-plus") Add key
                 el-button(type="default" icon="el-icon-plus") Add account
       pre {{ account }}
@@ -99,6 +104,21 @@
       &--type-grow {
         flex-grow: 1;
       }
+    }
+  }
+
+  &__permission {
+    &-data {
+      flex-grow: 1;
+    }
+
+    &-manage {
+      margin-top: 20px;
+    }
+
+    &-list {
+      display: flex;
+      align-items: center;
     }
   }
 }
