@@ -37,7 +37,7 @@ module.exports = {
     { src: "~/plugins/async-computed.plugin.ts" }
   ],
   head: {
-    title: "tt1",
+    title: "DEPLOES for EOS Community. Made by Aler Denisov in Ducatur",
     meta: [
       { charset: "utf-8" },
       {
