@@ -19,6 +19,14 @@ const host =
   process.env.npm_package_config_nuxt_host ||
   "localhost";
 
+const routerBase =
+  process.env.DEPLOY_ENV === "GH_PAGES"
+    ? {
+        router: {
+          base: "/deploeos/"
+        }
+      }
+    : {};
 module.exports = {
   env: {
     baseUrl: process.env.BASE_URL || `http://${host}:${port}`
@@ -60,5 +68,7 @@ module.exports = {
   css: ["~/assets/css/main.css"],
   build: {},
   modules: ["@nuxtjs/axios", "~/modules/typescript.js"],
-  axios: {}
+  axios: {},
+
+  ...routerBase
 };
