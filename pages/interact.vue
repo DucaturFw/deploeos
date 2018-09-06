@@ -1,5 +1,7 @@
 <template lang="pug">
-    div(:class="b()")
+    div(:class="b()" v-loading="updating")
+      el-card(shadow="never")
+        el-input(v-model="accountName")
       div(v-if="ready")
         el-card(v-if="!error" v-for="action in actions" shadow="never" style="margin: 15px 0") 
           div(slot="header")
@@ -51,20 +53,27 @@ import { isChainType, lookUpBase } from "~/lib/eos-types";
   name: "interact-page",
   components: {
     "el-editor-wrapper": EditorWrapper
+  },
+  mounted() {
+    this.accountName = this.accountName || getAccountName(this.identity);
   }
 })
 export default class extends Vue {
   @State network: INetworkModel;
   @State identity: IScatterIdentity;
 
+  accountName: string = "";
+  updating: boolean = false;
+
   interact = {
     actions: {}
   };
 
-  @Async(async function() {
+  async updateAbi() {
+    this.updating = true;
     let abi: { abi: IAbiResponse };
     try {
-      abi = await getAbi(getAccountName(this.identity), this.network);
+      abi = await getAbi(this.accountName, this.network);
     } catch (e) {
       console.log(e);
       return {
@@ -79,7 +88,12 @@ export default class extends Vue {
       _ => ({})
     );
 
+    this.updating = false;
     return abi;
+  }
+
+  @Async(async function() {
+    return await this.updateAbi();
   })
   abi: { abi?: IAbiResponse; status: number; text: string } | null = null;
 
@@ -127,17 +141,25 @@ export default class extends Vue {
   }
 
   async sendAction(action: string) {
-    const data = this.interact.actions[action];
+    this.updating = true;
+    try {
+      const data = this.interact.actions[action];
 
-    const { result } = await sendTransaction(
-      getAccountName(this.identity),
-      action,
-      data,
-      this.identity,
-      this.network
-    );
-
-    console.log(result);
+      const { result } = await sendTransaction(
+        this.accountName,
+        action,
+        data,
+        this.identity,
+        this.network
+      );
+    } catch (e) {
+      this.$message({
+        message: "Incorrect action call: " + e,
+        type: "error"
+      });
+      console.error(e);
+    }
+    this.updating = false;
   }
 }
 
