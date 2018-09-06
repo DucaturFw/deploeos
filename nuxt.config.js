@@ -25,7 +25,8 @@ module.exports = {
   },
   plugins: [
     { src: "~/plugins/elements.plugin.ts" },
-    { src: "~/plugins/bem.plugin.ts" }
+    { src: "~/plugins/bem.plugin.ts" },
+    { src: "~/plugins/async-computed.plugin.ts" }
   ],
   head: {
     title: "tt1",
