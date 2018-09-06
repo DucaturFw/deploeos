@@ -132,6 +132,31 @@ export async function sendTransaction(
     action
   };
 }
+
+export async function deployContract(
+  network: INetworkModel,
+  identity: IScatterIdentity,
+  bin: Buffer,
+  abi: any
+) {
+  const scatter = await getScatter();
+  scatter.requireVersion(5.0);
+  const { eos } = await getEos(network);
+
+  const setcode = await eos.setcode({
+    account: getAccountName(identity),
+    vmtype: 0,
+    vmversion: 0,
+    code: bin
+  });
+
+  const setabi = await eos.setabi({
+    account: getAccountName(identity),
+    abi
+  });
+
+  return [setcode, setabi];
+}
 // export async function forgetIdentity() {
 //   const scatter = await this.getScatter();
 //   return scatter.forgetIdentity();
