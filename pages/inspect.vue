@@ -3,64 +3,82 @@
     el-card(shadow="never")
       el-input(v-model="accountName")
     div(:class="b('inspect')" v-if="account")
-      h3 Summary 
+    
+      el-card(shadow="never" body-style="padding: 0")
+        div(slot="header")
+          h3(style="margin: 0")  Summary 
 
-      el-row(:class="b('row', { type: 'account' })" :gutter="30")
-        el-col(:class="b('col', { label: true, type: 'account' })" :span="8")
-          span Account name
-        el-col(:class="b('col', { data: true, type: 'account' })" :span="16")
-          span {{ account.account_name }}
+        el-card(shadow="never")
+          el-row(:class="b('row', { type: 'account' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'account' })" :span="8")
+              span Account name
+            el-col(:class="b('col', { data: true, type: 'account' })" :span="16")
+              span {{ account.account_name }}
 
-      el-row(:class="b('row', { type: 'created' })" :gutter="30")
-        el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-          span Creation date
-        el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          span {{ account.created }}
+        el-card(shadow="never")
+          el-row(:class="b('row', { type: 'created' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
+              span Creation date
+            el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
+              span {{ account.created }}
 
-      h3 Fuel
-      el-row(:class="b('row', { type: 'created' })" :gutter="30")
-        el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-          span RAM
-        el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          div(:class="b('spacer')")
-            div(:class="b('spacer-inside', { type: 'grow' })")
-              span {{ account.ram_usage }} of {{ account.ram_quota }}
-            div(:class="b('spacer-inside', { type: 'shrink' })")
-              el-input-number(v-model.number="buy.ram" controls-position="right" :min="1" size="small")
-              el-button(type="primary" @click='buyResource("ram")' size="small") Buy More
-      el-row(:class="b('row', { type: 'created' })" :gutter="30")
-        el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-          span CPU
-        el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          div(:class="b('spacer')")
-            div(:class="b('spacer-inside', { type: 'grow' })")
-              span {{ account.cpu_limit.used }} of {{ account.cpu_limit.max }}
-            div(:class="b('spacer-inside', { type: 'shrink' })")
-              el-input-number(v-model.number="buy.cpu" controls-position="right" :min="1" size="small")
-              el-button(type="primary" @click='buyResource("cpu")' size="small") Buy More
-      el-row(:class="b('row', { type: 'created' })" :gutter="30")
-        el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-          span Network
-        el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          div(:class="b('spacer')")
-            div(:class="b('spacer-inside', { type: 'grow' })")
-              span {{ account.net_limit.used }} of {{ account.net_limit.max }}
-            div(:class="b('spacer-inside', { type: 'shrink' })")
-              el-input-number(v-model.number="buy.net" controls-position="right" :min="1" size="small")
-              el-button(type="primary" @click='buyResource("net")' size="small") Buy More
+      el-card(shadow="never" body-style="padding: 0")
+        div(slot="header")
+          h3(style="margin: 0")  Fuel
 
-      h3 Permissions
+        el-card(shadow="never")
+          el-row(:class="b('row', { type: 'created' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
+              span RAM
+            el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
+              div(:class="b('spacer')")
+                div(:class="b('spacer-inside', { type: 'grow' })")
+                  span {{ account.ram_usage }} of {{ account.ram_quota }}
+                div(:class="b('spacer-inside', { type: 'shrink' })")
+                  el-input-number(v-model.number="buy.ram" controls-position="right" :min="1")
+                  el-button(type="default" @click='buyResource("ram")') Buy More
 
-      div( v-for="permission in account.permissions")
-        el-row(:class="b('row', { type: 'created' })" :gutter="30")
-          el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
-            span {{ permission.perm_name }}
-          el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-            div(v-for="key in permission.required_auth.keys") {{ key.weight }} - {{ key.key }}
-            div(v-for="account in permission.required_auth.accounts") {{ account.weight }} - {{ account.permission.actor }}@{{ account.permission.permission }}
+        el-card(shadow="never")
+          el-row(:class="b('row', { type: 'created' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
+              span CPU
+            el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
+              div(:class="b('spacer')")
+                div(:class="b('spacer-inside', { type: 'grow' })")
+                  span {{ account.cpu_limit.used }} of {{ account.cpu_limit.max }}
+                div(:class="b('spacer-inside', { type: 'shrink' })")
+                  el-input-number(v-model.number="buy.cpu" controls-position="right" :min="1")
+                  el-button(type="default" @click='buyResource("cpu")') Buy More
+
+        el-card(shadow="never")
+          el-row(:class="b('row', { type: 'created' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
+              span Network
+            el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
+              div(:class="b('spacer')")
+                div(:class="b('spacer-inside', { type: 'grow' })")
+                  span {{ account.net_limit.used }} of {{ account.net_limit.max }}
+                div(:class="b('spacer-inside', { type: 'shrink' })")
+                  el-input-number(v-model.number="buy.net" controls-position="right" :min="1")
+                  el-button(type="default" @click='buyResource("net")') Buy More
+
+      el-card(shadow="never" body-style="padding: 0")
+        div(slot="header")
+          h3(style="margin: 0")  Permissions
+
+        el-card( v-for="permission in account.permissions" shadow="never")
+          el-row(:class="b('row', { type: 'created' })" :gutter="30")
+            el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
+              span {{ permission.perm_name }}
+            el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
+              div(v-for="key in permission.required_auth.keys") {{ key.weight }} - {{ key.key }}
+              div(v-for="account in permission.required_auth.accounts") {{ account.weight }} - {{ account.permission.actor }}@{{ account.permission.permission }}
+              el-button-group
+                el-button(type="default" icon="el-icon-plus") Add key
+                el-button(type="default" icon="el-icon-plus") Add account
       pre {{ account }}
     div(v-loading="true" v-else)
-      h3 Loading
+      h3(style="margin: 0")  Loading
 </template>
 
 <style lang="scss">
