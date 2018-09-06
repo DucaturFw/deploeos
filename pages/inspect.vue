@@ -11,7 +11,6 @@
         el-col(:class="b('col', { data: true, type: 'account' })" :span="16")
           span {{ account.account_name }}
 
-
       el-row(:class="b('row', { type: 'created' })" :gutter="30")
         el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
           span Creation date
@@ -23,17 +22,32 @@
         el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
           span RAM
         el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          span {{ account.ram_usage }} of {{ account.ram_quota }}
+          div(:class="b('spacer')")
+            div(:class="b('spacer-inside', { type: 'grow' })")
+              span {{ account.ram_usage }} of {{ account.ram_quota }}
+            div(:class="b('spacer-inside', { type: 'shrink' })")
+              el-input-number(v-model.number="buy.ram" controls-position="right" :min="1" size="small")
+              el-button(type="primary" @click='buyResource("ram")' size="small") Buy More
       el-row(:class="b('row', { type: 'created' })" :gutter="30")
         el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
           span CPU
         el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          span {{ account.cpu_limit.used }} of {{ account.cpu_limit.max }}
+          div(:class="b('spacer')")
+            div(:class="b('spacer-inside', { type: 'grow' })")
+              span {{ account.cpu_limit.used }} of {{ account.cpu_limit.max }}
+            div(:class="b('spacer-inside', { type: 'shrink' })")
+              el-input-number(v-model.number="buy.cpu" controls-position="right" :min="1" size="small")
+              el-button(type="primary" @click='buyResource("cpu")' size="small") Buy More
       el-row(:class="b('row', { type: 'created' })" :gutter="30")
         el-col(:class="b('col', { label: true, type: 'created' })" :span="8")
           span Network
         el-col(:class="b('col', { data: true, type: 'created' })" :span="16")
-          span {{ account.net_limit.used }} of {{ account.net_limit.max }}
+          div(:class="b('spacer')")
+            div(:class="b('spacer-inside', { type: 'grow' })")
+              span {{ account.net_limit.used }} of {{ account.net_limit.max }}
+            div(:class="b('spacer-inside', { type: 'shrink' })")
+              el-input-number(v-model.number="buy.net" controls-position="right" :min="1" size="small")
+              el-button(type="primary" @click='buyResource("net")' size="small") Buy More
 
       h3 Permissions
 
@@ -74,6 +88,15 @@ export default class extends Vue {
 
   accountName: string = "";
 
+  buy = {
+    cpu: 0,
+    net: 0,
+    ram: 0
+  };
+
+  buyResource(resource: "cpu" | "net" | "ram") {
+    console.log("buy", resource, this.buy[resource]);
+  }
   @Async(async function() {
     if (this.accountName) {
       try {
