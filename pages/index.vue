@@ -7,7 +7,10 @@
                                 :disabled="disabled"
                                 action='/',
                                 :before-upload='possibleAbi'
-                                ref='upload')
+                                ref='upload'
+                                :on-remove="removeAbi"
+                                :limit="1"
+                                :file-list="fileList")
             i.el-icon-upload
             .el-upload__text
               em click to upload
@@ -17,19 +20,22 @@
                                 :disabled="disabled"
                                 action='/',
                                 :before-upload='possibleWasm'
-                                ref='upload')
+                                :on-remove="removeWasm"
+                                ref='upload'
+                                :limit="1"
+                                :file-list="fileList")
             i.el-icon-upload
             .el-upload__text
               em click to upload
 
-      el-button(type="primary" @click='deploy') Deploy
+      el-button(type="primary" @click='deploy' :disabled="!readyToDeploy") Deploy
 </template>
 
 <style lang="scss">
 .index-page {
   &__upload-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
   }
 
@@ -41,7 +47,7 @@
 
 
 <script lang="ts">
-import EosClass from "~/lib/eos";
+import { deployContract } from "~/lib/eos-helper";
 import { Component, Vue } from "nuxt-property-decorator";
 import { State } from "vuex-class";
 import { INetworkModel } from "types";
@@ -50,22 +56,25 @@ import { INetworkModel } from "types";
   name: "index-page"
 })
 export default class extends Vue {
-  @State eos: EosClass;
   @State network: INetworkModel;
   @State identity: string;
 
   bin: any = null;
-  abi: any = {};
+  abi: any = null;
+  fileList: any[] = [];
 
   get disabled() {
     return this.network === null || this.identity === null;
   }
 
   async deploy() {
-    if (this.eos) {
-      const result = await this.eos.deployContract(this.bin, this.abi);
-      console.log(result);
-    }
+    return deployContract(this.network, this.identity, this.bin, this.abi);
+  }
+
+  get readyToDeploy() {
+    return (
+      !this.disabled && this.bin && this.abi && typeof this.abi === "object"
+    );
   }
 
   async possibleWasm(f: File) {
@@ -75,7 +84,7 @@ export default class extends Vue {
       console.log(reader.result, this.bin);
     };
     reader.readAsArrayBuffer(f);
-    throw new Error("do not upload hack");
+    // throw new Error("do not upload hack");
   }
   async possibleAbi(f: File) {
     const reader = new FileReader();
@@ -84,7 +93,14 @@ export default class extends Vue {
       console.log(reader.result, this.abi);
     };
     reader.readAsText(f);
-    throw new Error("do not upload hack");
+  }
+
+  removeAbi(file: any, fileList: any) {
+    this.abi = null;
+  }
+
+  removeWasm(file: any, fileList: any) {
+    this.bin = null;
   }
 }
 </script>

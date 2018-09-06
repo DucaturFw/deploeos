@@ -1,4 +1,4 @@
-import Eos, { EosInstance } from "eosjs";
+import Eos, { EosInstance, IPermission } from "eosjs";
 import { IStorageState, INetworkModel, IAbiResponse } from "~/types";
 
 export type Scatter = any;
@@ -101,13 +101,19 @@ export async function chooseIdentity(state: IStorageState) {
 //   });
 // }
 
-export function getAccountName(identity: IScatterIdentity): Name {
+export function getAccountName(
+  identity: IScatterIdentity,
+  permission: boolean = false
+): Name {
   if (
     identity.accounts &&
     Array.isArray(identity.accounts) &&
     identity.accounts.length > 0
   ) {
-    return identity.accounts[0].name;
+    return (
+      identity.accounts[0].name +
+      (permission ? `@${identity.accounts[0].authority}` : "")
+    );
   } else {
     throw Error("Account not found!");
   }
@@ -139,8 +145,6 @@ export async function deployContract(
   bin: Buffer,
   abi: any
 ) {
-  const scatter = await getScatter();
-  scatter.requireVersion(5.0);
   const { eos } = await getEos(network);
 
   const setcode = await eos.setcode({
@@ -167,3 +171,76 @@ export async function deployContract(
 //   scatter.requireVersion(5.0);
 
 // }
+
+export async function buyRam(
+  network: INetworkModel,
+  identity: IScatterIdentity,
+  bytes: number
+) {
+  const { eos } = await getEos(network);
+  return eos.buyrambytes({
+    payer: getAccountName(identity),
+    receiver: getAccountName(identity),
+    bytes: bytes
+  });
+}
+
+export async function stakeCpu(
+  network: INetworkModel,
+  identity: IScatterIdentity,
+  value: number
+) {
+  const { eos } = await getEos(network);
+  return eos.delegatebw({
+    from: getAccountName(identity),
+    receiver: getAccountName(identity),
+    stake_net_quantity: "0 EOS",
+    stake_cpu_quantity: value.toFixed(4) + " EOS",
+    transfer: Math.floor(Math.random() * 100000)
+  });
+}
+
+export async function stakeNet(
+  network: INetworkModel,
+  identity: IScatterIdentity,
+  value: number
+) {
+  const { eos } = await getEos(network);
+  return eos.delegatebw({
+    from: getAccountName(identity),
+    receiver: getAccountName(identity),
+    stake_net_quantity: value.toFixed(4) + " EOS",
+    stake_cpu_quantity: "0 EOS",
+    transfer: Math.floor(Math.random() * 100000)
+  });
+}
+
+export async function updatePermissions(
+  network: INetworkModel,
+  identity: IScatterIdentity,
+  auth: IPermission
+) {
+  console.log(auth);
+  const { eos } = await getEos(network);
+  const [actor, permission] = getAccountName(identity, true).split("@");
+  return eos.transaction({
+    actions: [
+      {
+        account: "eosio",
+        name: "updateauth",
+        data: {
+          account: actor,
+          permission: auth.perm_name,
+          parent: auth.parent,
+          auth: auth.required_auth
+        }, //auth,
+        authorization: [
+          {
+            actor,
+            permission
+          }
+        ]
+      }
+    ]
+  });
+}
