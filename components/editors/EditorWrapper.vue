@@ -59,6 +59,7 @@ export default class EditorWrapper extends Vue {
   }
 
   get knownType() {
+    console.log(this.type);
     if (this.base) {
       return knownTypes[this.type as string];
     } else {
