@@ -88,6 +88,8 @@ export default class extends Vue {
       _ => ({})
     );
 
+    console.log(abi);
+
     this.updating = false;
     return abi;
   }
@@ -103,6 +105,12 @@ export default class extends Vue {
     }
   }
 
+  get types() {
+    if (this.abi && this.abi.abi && !this.error) {
+      return this.abi.abi.types;
+    }
+  }
+
   get actions() {
     if (this.abi && this.abi.abi && !this.error) {
       return this.abi.abi.actions;
@@ -111,7 +119,7 @@ export default class extends Vue {
 
   get customTypes() {
     if (this.structs) {
-      return toDictionary(
+      const dict = toDictionary(
         this.structs,
         x => x.name,
         x =>
@@ -119,6 +127,12 @@ export default class extends Vue {
             fields: toDictionary(x.fields, f => f.name, f => f.type)
           })
       );
+
+      (this.types as any[]).forEach(
+        type => (dict[type.new_type_name] = type.type)
+      );
+
+      return dict;
     }
     return {};
   }
